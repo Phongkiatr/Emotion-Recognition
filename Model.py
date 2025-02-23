@@ -36,7 +36,7 @@ train_datagen = ImageDataGenerator(
 
 # โหลดข้อมูลการฝึก
 train_generator = train_datagen.flow_from_directory(
-    'DataSet/CKPlusDataset/',  # พาธที่เก็บโฟลเดอร์ของข้อมูล
+    'CKPlusTrainDataset/',  # พาธที่เก็บโฟลเดอร์ของข้อมูล
     target_size=(48, 48),
     color_mode='grayscale',
     class_mode='sparse',
