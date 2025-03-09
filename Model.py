@@ -4,7 +4,7 @@ from tensorflow.keras.preprocessing.image import ImageDataGenerator
 # สร้างโมเดล CNN
 def create_model():
     model = models.Sequential()
-    model.add(layers.Input(shape=(48, 48, 1)))  # เปลี่ยนจาก input_shape มาใช้ Input แทน
+    model.add(layers.Input(shape=(48, 48, 1)))  # กำหนดขนาดของ input
     model.add(layers.Conv2D(32, (3, 3), activation='relu'))
     model.add(layers.MaxPooling2D((2, 2)))
 
@@ -16,15 +16,14 @@ def create_model():
 
     model.add(layers.Flatten())
     model.add(layers.Dense(128, activation='relu'))
-    model.add(layers.Dense(7, activation='softmax'))  # เปลี่ยนจำนวนออกเป็น 7 สำหรับ 7 อารมณ์
+    model.add(layers.Dense(3, activation='softmax'))  # ใช้ 3 คลาส (อารมณ์)
 
-    # คอมไพล์โมเดล
     model.compile(optimizer='adam', loss='sparse_categorical_crossentropy', metrics=['accuracy'])
     return model
 
-# สร้าง ImageDataGenerator สำหรับการโหลดและทำ Data Augmentation
-train_datagen = ImageDataGenerator(
-    rescale=1./255,  # Normalization
+# Data Augmentation สำหรับ Train และ Validation
+train_val_datagen = ImageDataGenerator(
+    rescale=1./255,  # ปรับขนาดภาพ
     rotation_range=15,
     width_shift_range=0.1,
     height_shift_range=0.1,
@@ -34,18 +33,46 @@ train_datagen = ImageDataGenerator(
     fill_mode='nearest'
 )
 
-# โหลดข้อมูลการฝึก
-train_generator = train_datagen.flow_from_directory(
-    'CKPlusTrainDataset/',  # พาธที่เก็บโฟลเดอร์ของข้อมูล
+# Data Augmentation สำหรับ Test (ไม่มีการ Augment)
+test_datagen = ImageDataGenerator(rescale=1./255)
+
+# โหลดข้อมูล Training (จาก Train Set)
+train_generator = train_val_datagen.flow_from_directory(
+    'Dataset_Split/train/',  # พาธไปยัง Train folder
     target_size=(48, 48),
     color_mode='grayscale',
     class_mode='sparse',
     batch_size=32
 )
 
+# โหลดข้อมูล Validation (จาก Validation Set)
+validation_generator = train_val_datagen.flow_from_directory(
+    'Dataset_Split/val/',  # พาธไปยัง Validation folder
+    target_size=(48, 48),
+    color_mode='grayscale',
+    class_mode='sparse',
+    batch_size=32
+)
+
+# โหลดข้อมูล Test (จาก Test Set)
+test_generator = test_datagen.flow_from_directory(
+    'Dataset_Split/test/',  # พาธไปยัง Test folder
+    target_size=(48, 48),
+    color_mode='grayscale',
+    class_mode='sparse',
+    batch_size=32,
+    shuffle=False  # Test ไม่ต้องสลับรูป
+)
+
 # สร้างและฝึกโมเดล
 model = create_model()
-model.fit(train_generator, epochs=20, steps_per_epoch=len(train_generator))
+model.fit(
+    train_generator,
+    epochs=20,
+    steps_per_epoch=len(train_generator),
+    validation_data=validation_generator,
+    validation_steps=len(validation_generator)
+)
 
 # บันทึกโมเดล
-model.save('Model/CK_model.h5')
+model.save('Model/model.h5')

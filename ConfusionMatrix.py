@@ -1,39 +1,41 @@
 import numpy as np
 import tensorflow as tf
-from tensorflow.keras import layers, models
-from tensorflow.keras.preprocessing import image
-from tensorflow.keras.preprocessing.image import ImageDataGenerator
 import matplotlib.pyplot as plt
-from sklearn.metrics import confusion_matrix, ConfusionMatrixDisplay
+from sklearn.metrics import confusion_matrix
+import seaborn as sns
+from tensorflow.keras.preprocessing.image import ImageDataGenerator
 
-# ฟังก์ชันสำหรับคาดการณ์และสร้าง Confusion Matrix
-def evaluate_model(test_data_dir):
-    test_datagen = ImageDataGenerator(rescale=1./255)
-    test_generator = test_datagen.flow_from_directory(
-        test_data_dir,
-        target_size=(48, 48),
-        color_mode='grayscale',
-        class_mode='sparse',
-        batch_size=32,
-        shuffle=False  # ไม่สับเปลี่ยนเพื่อให้สามารถจับคู่ผลลัพธ์ได้
-    )
+# โหลดโมเดลที่ฝึกเสร็จแล้ว
+model = tf.keras.models.load_model('Model/model.h5')
 
-    # คาดการณ์
-    y_pred = model.predict(test_generator)
-    y_pred_classes = np.argmax(y_pred, axis=1)
-    
-    # เอาค่าจริง
-    y_true = test_generator.classes
+# สร้าง ImageDataGenerator สำหรับการโหลดข้อมูลทดสอบ
+test_datagen = ImageDataGenerator(rescale=1./255)
 
-    # สร้าง Confusion Matrix
-    cm = confusion_matrix(y_true, y_pred_classes)
-    
-    # แสดงผล Confusion Matrix
-    disp = ConfusionMatrixDisplay(confusion_matrix=cm, display_labels=test_generator.class_indices)
-    disp.plot(cmap=plt.cm.Blues)
-    plt.title('Confusion Matrix')
-    plt.show()
+test_generator = test_datagen.flow_from_directory(
+    'Dataset_split/test/',  # พาธที่เก็บโฟลเดอร์ของข้อมูลทดสอบ
+    target_size=(48, 48),
+    color_mode='grayscale',
+    class_mode='sparse',
+    batch_size=32,
+    shuffle=False  # ไม่ต้องการให้ข้อมูลสับเปลี่ยนในระหว่างการทดสอบ
+)
 
-model = tf.keras.models.load_model('Model/CK_model.h5')
-test_data_dir = 'CKPlusTestDataset/'  # เปลี่ยนเป็นที่อยู่ของข้อมูลทดสอบ
-evaluate_model(test_data_dir)
+# ทำนายผลลัพธ์จากโมเดล
+predictions = model.predict(test_generator, steps=len(test_generator), verbose=1)
+
+# แปลงค่าการทำนายให้เป็นคลาส (จาก probabilistic output ให้เป็นคลาสที่มีความน่าจะเป็นสูงสุด)
+predicted_classes = np.argmax(predictions, axis=1)
+
+# แสดง Confusion Matrix
+true_classes = test_generator.classes
+
+# คำนวณ confusion matrix
+cm = confusion_matrix(true_classes, predicted_classes)
+
+# แสดง confusion matrix ด้วย heatmap
+plt.figure(figsize=(8, 6))
+sns.heatmap(cm, annot=True, fmt='d', cmap='Blues', xticklabels=test_generator.class_indices, yticklabels=test_generator.class_indices)
+plt.title('Confusion Matrix')
+plt.xlabel('Predicted')
+plt.ylabel('True')
+plt.show()

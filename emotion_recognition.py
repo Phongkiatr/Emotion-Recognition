@@ -13,7 +13,7 @@ def prepare_image(img_path):
     return img
 
 # Load Model ที่เคยเทรนด์ไว้
-model = tf.keras.models.load_model('Model/CK_model.h5')
+model = tf.keras.models.load_model('Model/model.h5')
 
 def predict_emotion(img_path):
     img = prepare_image(img_path)
@@ -21,14 +21,10 @@ def predict_emotion(img_path):
     predicted_class = np.argmax(predictions)
     
     # แปลงหมายเลขคลาสเป็นชื่ออารมณ์
-    emotion_labels = {
-        0: 'angry',    
-        1: 'contempt',   
-        2: 'disgust',     
-        3: 'fear',     
-        4: 'happy',   
-        5: 'sad',       
-        6: 'surprise'   
+    emotion_labels = {  
+        0: 'happy',   
+        1: 'sad',       
+        2: 'surprise'   
     }
     
     predicted_emotion = emotion_labels[predicted_class]
