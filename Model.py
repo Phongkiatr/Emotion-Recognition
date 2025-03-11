@@ -76,3 +76,10 @@ model.fit(
 
 # บันทึกโมเดล
 model.save('Model/model.h5')
+
+# ทดสอบโมเดลบน Test Set
+test_loss, test_accuracy = model.evaluate(test_generator, steps=len(test_generator))
+
+# แสดงผลลัพธ์
+print(f'Test Loss: {test_loss:.4f}')
+print(f'Test Accuracy: {test_accuracy:.4f}')
