@@ -4,7 +4,7 @@ from tensorflow.keras.preprocessing.image import ImageDataGenerator
 # สร้างโมเดล CNN
 def create_model():
     model = models.Sequential()
-    model.add(layers.Input(shape=(48, 48, 1)))  # กำหนดขนาดของ input
+    model.add(layers.Input(shape=(48, 48, 1)))  # ขนาดของ input
     model.add(layers.Conv2D(32, (3, 3), activation='relu'))
     model.add(layers.MaxPooling2D((2, 2)))
 
@@ -68,7 +68,7 @@ test_generator = test_datagen.flow_from_directory(
 model = create_model()
 model.fit(
     train_generator,
-    epochs=20,
+    epochs=50,
     steps_per_epoch=len(train_generator),
     validation_data=validation_generator,
     validation_steps=len(validation_generator)

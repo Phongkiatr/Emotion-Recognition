@@ -53,7 +53,7 @@ def predict_emotion(img_path):
 
 # ใช้งาน
 # เปลี่ยนเป็นที่อยู่ของภาพที่ต้องการทำนาย
-img_paths = ['TestData/ch_1.jpg', 'TestData/ch_2.png', 'TestData/ch_3.png', 'TestData/new2.png', 'TestData/Bell.png', 'TestData/Bell1.png']
+img_paths = ['TestData/image.png']
 for path in img_paths:
     predicted_emotion = predict_emotion(path)
     print(f'Predicted emotion class: {predicted_emotion}')
